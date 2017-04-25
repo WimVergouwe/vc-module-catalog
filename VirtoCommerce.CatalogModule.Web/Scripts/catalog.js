@@ -72,17 +72,17 @@ angular.module(catalogsModuleName, [
 	    mainMenuService.addMenuItem(menuItem);
 
 	    //NOTIFICATIONS
-	    //Export
-	    var menuExportTemplate =
+	    // CsvExport
+	    var menuCsvExportTemplate =
             {
                 priority: 900,
                 satisfy: function (notify, place) { return place == 'menu' && notify.notifyType == 'CatalogCsvExport'; },
                 template: 'Modules/$(VirtoCommerce.Catalog)/Scripts/blades/export/notifications/menuExport.tpl.html',
                 action: function (notify) { $state.go('workspace.pushNotificationsHistory', notify) }
             };
-	    pushNotificationTemplateResolver.register(menuExportTemplate);
+	    pushNotificationTemplateResolver.register(menuCsvExportTemplate);
 
-	    var historyExportTemplate =
+	    var historyCsvExportTemplate =
           {
               priority: 900,
               satisfy: function (notify, place) { return place == 'history' && notify.notifyType == 'CatalogCsvExport'; },
@@ -99,18 +99,18 @@ angular.module(catalogsModuleName, [
                   bladeNavigationService.showBlade(blade);
               }
           };
-	    pushNotificationTemplateResolver.register(historyExportTemplate);
+	    pushNotificationTemplateResolver.register(historyCsvExportTemplate);
 	    //Import
-	    var menuImportTemplate =
+	    var menuCsvImportTemplate =
           {
               priority: 900,
               satisfy: function (notify, place) { return place == 'menu' && notify.notifyType == 'CatalogCsvImport'; },
               template: 'Modules/$(VirtoCommerce.Catalog)/Scripts/blades/import/notifications/menuImport.tpl.html',
               action: function (notify) { $state.go('workspace.pushNotificationsHistory', notify) }
           };
-	    pushNotificationTemplateResolver.register(menuImportTemplate);
+	    pushNotificationTemplateResolver.register(menuCsvImportTemplate);
 
-	    var historyImportTemplate =
+	    var historyCsvImportTemplate =
           {
               priority: 900,
               satisfy: function (notify, place) { return place == 'history' && notify.notifyType == 'CatalogCsvImport'; },
@@ -127,7 +127,7 @@ angular.module(catalogsModuleName, [
                   bladeNavigationService.showBlade(blade);
               }
           };
-	    pushNotificationTemplateResolver.register(historyImportTemplate);
+	    pushNotificationTemplateResolver.register(historyCsvImportTemplate);
 
 	    //Register dashboard widgets
 	    //widgetService.registerWidget({
@@ -267,7 +267,13 @@ angular.module(catalogsModuleName, [
 	        controller: 'virtoCommerce.catalogModule.catalogCSVexportController',
 	        template: 'Modules/$(VirtoCommerce.Catalog)/Scripts/blades/export/catalog-CSV-export.tpl.html'
 	    });
-
+	    catalogExportService.register({
+	        name: 'Excel export',
+	        description: 'Catalog data export to Excel',
+	        icon: 'fa fa-file-excel-o',
+	        controller: 'virtoCommerce.catalogModule.catalogExcelexportController', //extension blade controller which will be displayed when user  choose you extension 
+	        template: 'Modules/$(VirtoCommerce.Catalog)/Scripts/blades/export/catalog-XLSX-export.tpl.html' //template for extension blade
+	    });
 
 	    //Security scopes
 	    //Register permission scopes templates used for scope bounded definition in role management ui
