@@ -1,5 +1,5 @@
 ﻿angular.module('virtoCommerce.catalogModule')
-.controller('virtoCommerce.catalogModule.catalogExcelexportController', ['$scope', 'platformWebApp.bladeNavigationService', 'virtoCommerce.catalogModule.export', 'platformWebApp.notifications', 'virtoCommerce.coreModule.fulfillment.fulfillments', 'virtoCommerce.pricingModule.pricelists', function ($scope, bladeNavigationService, exportResourse, notificationsResource, fulfillments, pricelists) {
+.controller('virtoCommerce.catalogModule.catalogExcelexportController', ['$scope', 'platformWebApp.bladeNavigationService', 'virtoCommerce.catalogModule.xlsxExport', 'platformWebApp.notifications', 'virtoCommerce.coreModule.fulfillment.fulfillments', 'virtoCommerce.pricingModule.pricelists', function ($scope, bladeNavigationService, exportResourse, notificationsResource, fulfillments, pricelists) {
     var blade = $scope.blade;
     blade.fulfilmentCenterId = undefined;
     blade.pricelistId = undefined;

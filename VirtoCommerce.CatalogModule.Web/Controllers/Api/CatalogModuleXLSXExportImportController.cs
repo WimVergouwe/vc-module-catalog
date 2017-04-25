@@ -7,7 +7,7 @@ using CsvHelper;
 using Hangfire;
 using Omu.ValueInjecter;
 using VirtoCommerce.CatalogModule.Web.ExportImport;
-using VirtoCommerce.CatalogModule.Web.ExportImport.Csv;
+using VirtoCommerce.CatalogModule.Web.ExportImport.Xlsx;
 using VirtoCommerce.CatalogModule.Web.Model.PushNotifications;
 using VirtoCommerce.CatalogModule.Web.Security;
 using VirtoCommerce.Domain.Catalog.Services;
@@ -20,21 +20,21 @@ using VirtoCommerce.Platform.Data.Common;
 
 namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
 {
-    [RoutePrefix("api/catalog")]
-    public class CatalogModuleExportImportController : CatalogBaseController
+    [RoutePrefix("api/catalog/xlsx")]
+    public class CatalogModuleXlsxExportImportController : CatalogBaseController
     {
         private readonly ICatalogService _catalogService;
         private readonly IPushNotificationManager _notifier;
         private readonly ICommerceService _commerceService;
         private readonly IBlobStorageProvider _blobStorageProvider;
-        private readonly CsvCatalogExporter _csvExporter;
+        private readonly XlsxCatalogExporter _xlsxExporter;
         private readonly CsvCatalogImporter _csvImporter;
         private readonly IUserNameResolver _userNameResolver;
         private readonly IBlobUrlResolver _blobUrlResolver;
 
-        public CatalogModuleExportImportController(ICatalogService catalogService, IPushNotificationManager pushNotificationManager, ICommerceService commerceService,
+        public CatalogModuleXlsxExportImportController(ICatalogService catalogService, IPushNotificationManager pushNotificationManager, ICommerceService commerceService,
                                                    IBlobStorageProvider blobStorageProvider, IBlobUrlResolver blobUrlResolver,
-                                                   CsvCatalogExporter csvExporter, CsvCatalogImporter csvImporter, ISecurityService securityService, IPermissionScopeService permissionScopeService,
+                                                   XlsxCatalogExporter xlsxExporter, CsvCatalogImporter csvImporter, ISecurityService securityService, IPermissionScopeService permissionScopeService,
                                                    IUserNameResolver userNameResolver)
             : base(securityService, permissionScopeService)
         {
@@ -42,7 +42,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
             _notifier = pushNotificationManager;
             _commerceService = commerceService;
             _blobStorageProvider = blobStorageProvider;
-            _csvExporter = csvExporter;
+            _xlsxExporter = xlsxExporter;
             _csvImporter = csvImporter;
             _userNameResolver = userNameResolver;
             _blobUrlResolver = blobUrlResolver;
@@ -56,7 +56,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
         [HttpPost]
         [Route("export")]
         [ResponseType(typeof(ExportNotification))]
-        public IHttpActionResult DoExport(CsvExportInfo exportInfo)
+        public IHttpActionResult DoExport(ExportInfo exportInfo)
         {
             CheckCurrentUserHasPermissionForObjects(CatalogPredefinedPermissions.Export, exportInfo);
 
@@ -181,10 +181,10 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
             {
                 try
                 {
-                    _csvExporter.DoExport(stream, exportInfo, progressCallback);
+                    _xlsxExporter.DoExport(stream, exportInfo, progressCallback);
 
                     stream.Position = 0;
-                    var blobRelativeUrl = "temp/Catalog-" + catalog.Name + "-export.csv";
+                    var blobRelativeUrl = "temp/Catalog-" + catalog.Name + "-export.xlsx";
                     //Upload result csv to blob storage
                     using (var blobStream = _blobStorageProvider.OpenWrite(blobRelativeUrl))
                     {

@@ -152,6 +152,7 @@
     <Compile Include="Controllers\Api\CatalogBaseController.cs" />
     <Compile Include="Controllers\Api\CatalogModuleCatalogsController.cs" />
     <Compile Include="Controllers\Api\CatalogModuleCategoriesController.cs" />
+    <Compile Include="Controllers\Api\CatalogModuleXLSXExportImportController.cs" />
     <Compile Include="Controllers\Api\CatalogModuleExportImportController.cs" />
     <Compile Include="Controllers\Api\CatalogModuleProductsController.cs" />
     <Compile Include="Controllers\Api\CatalogModuleListEntryController.cs" />
@@ -159,11 +160,13 @@
     <Compile Include="Controllers\Api\CatalogModulePropertiesController.cs" />
     <Compile Include="Converters\ImportJobConverter.cs" />
     <Compile Include="Converters\ImportMappingItemConverter.cs" />
+    <Compile Include="ExportImport\AbstractCatalogExporter.cs" />
     <Compile Include="ExportImport\CatalogExportImport.cs" />
-    <Compile Include="ExportImport\CsvCatalogExporter.cs" />
+    <Compile Include="ExportImport\Csv\CsvCatalogExporter.cs" />
     <Compile Include="ExportImport\CsvCatalogImporter.cs" />
     <Compile Include="ExportImport\ExpressionConverter.cs" />
     <Compile Include="ExportImport\CsvProductMap.cs" />
+    <Compile Include="ExportImport\Xlsx\XlsxCatalogExporter.cs" />
     <Compile Include="Model\PushNotifications\ExportNotification.cs" />
     <Compile Include="Model\PushNotifications\ImportNotification.cs" />
     <Compile Include="Model\PushNotifications\JobNotificationBase.cs" />

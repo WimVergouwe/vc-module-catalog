@@ -35,6 +35,10 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DocumentFormat.OpenXml, Version=2.5.5631.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\DocumentFormat.OpenXml.2.5\lib\DocumentFormat.OpenXml.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
@@ -60,6 +64,7 @@
       <HintPath>..\packages\VirtoCommerce.Platform.Core.2.12.5\lib\net461\VirtoCommerce.Platform.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
@@ -111,6 +116,7 @@
     <Compile Include="Security\CatalogSelectedCategoryScope.cs" />
     <Compile Include="Security\CatalogSelectedScope.cs" />
     <Compile Include="Security\SearchCriteriaExtensions.cs" />
+    <Compile Include="Utilities\XlsxUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

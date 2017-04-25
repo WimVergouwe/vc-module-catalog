@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using CsvHelper;
-using VirtoCommerce.Domain.Catalog.Model;
 using VirtoCommerce.Domain.Catalog.Services;
 using VirtoCommerce.Domain.Inventory.Services;
 using VirtoCommerce.Domain.Pricing.Model;
@@ -12,27 +10,24 @@ using VirtoCommerce.Domain.Pricing.Services;
 using VirtoCommerce.Platform.Core.Assets;
 using VirtoCommerce.Platform.Core.ExportImport;
 
-namespace VirtoCommerce.CatalogModule.Web.ExportImport
+namespace VirtoCommerce.CatalogModule.Web.ExportImport.Csv
 {
-    public sealed class CsvCatalogExporter
+    public sealed class CsvCatalogExporter : AbstractCatalogExporter
     {
-        private readonly ICatalogSearchService _searchService;
-        private readonly IItemService _productService;
         private readonly IPricingService _pricingService;
         private readonly IInventoryService _inventoryService;
         private readonly IBlobUrlResolver _blobUrlResolver;
 
         public CsvCatalogExporter(ICatalogSearchService catalogSearchService, IItemService productService,
-                                  IPricingService pricingService, IInventoryService inventoryService, IBlobUrlResolver blobUrlResolver)
+            IPricingService pricingService, IInventoryService inventoryService, IBlobUrlResolver blobUrlResolver)
+            : base(catalogSearchService, productService)
         {
-            _searchService = catalogSearchService;
-            _productService = productService;
             _pricingService = pricingService;
             _inventoryService = inventoryService;
             _blobUrlResolver = blobUrlResolver;
         }
 
-        public void DoExport(Stream outStream, CsvExportInfo exportInfo, Action<ExportImportProgressInfo> progressCallback)
+        public override void DoExport(Stream outStream, ExportInfo exportInfo, Action<ExportImportProgressInfo> progressCallback)
         {
             var prodgressInfo = new ExportImportProgressInfo
             {
@@ -70,10 +65,11 @@ namespace VirtoCommerce.CatalogModule.Web.ExportImport
 
 
                 //Export configuration
-                exportInfo.Configuration.PropertyCsvColumns = products.SelectMany(x => x.PropertyValues).Select(x => x.PropertyName).Distinct().ToArray();
+                var csvProductMappingConfiguration = CsvProductMappingConfiguration.GetDefaultConfiguration();
+                csvProductMappingConfiguration.PropertyCsvColumns = products.SelectMany(x => x.PropertyValues).Select(x => x.PropertyName).Distinct().ToArray();
 
-                csvWriter.Configuration.Delimiter = exportInfo.Configuration.Delimiter;
-                csvWriter.Configuration.RegisterClassMap(new CsvProductMap(exportInfo.Configuration));
+                csvWriter.Configuration.Delimiter = csvProductMappingConfiguration.Delimiter;
+                csvWriter.Configuration.RegisterClassMap(new CsvProductMap(csvProductMappingConfiguration));
 
                 //Write header
                 csvWriter.WriteHeader<CsvProduct>();
@@ -97,55 +93,13 @@ namespace VirtoCommerce.CatalogModule.Web.ExportImport
                     //Raise notification each notifyProductSizeLimit products
                     counter++;
                     prodgressInfo.ProcessedCount = counter;
-                    prodgressInfo.Description = string.Format("{0} of {1} products processed", prodgressInfo.ProcessedCount, prodgressInfo.TotalCount);
+                    prodgressInfo.Description = $"{prodgressInfo.ProcessedCount} of {prodgressInfo.TotalCount} products processed";
                     if (counter % notifyProductSizeLimit == 0 || counter == prodgressInfo.TotalCount)
                     {
                         progressCallback(prodgressInfo);
                     }
                 }
             }
-        }
-
-
-        private List<CatalogProduct> LoadProducts(string catalogId, string[] exportedCategories, string[] exportedProducts)
-        {
-            var retVal = new List<CatalogProduct>();
-
-            var productIds = new List<string>();
-            if (exportedProducts != null)
-            {
-                productIds = exportedProducts.ToList();
-            }
-            if (exportedCategories != null && exportedCategories.Any())
-            {
-                foreach (var categoryId in exportedCategories)
-                {
-                    var result = _searchService.Search(new SearchCriteria { CatalogId = catalogId, CategoryId = categoryId, Skip = 0, Take = int.MaxValue, ResponseGroup = SearchResponseGroup.WithProducts | SearchResponseGroup.WithCategories });
-                    productIds.AddRange(result.Products.Select(x => x.Id));
-                    if (result.Categories != null && result.Categories.Any())
-                    {
-                        retVal.AddRange(LoadProducts(catalogId, result.Categories.Select(x => x.Id).ToArray(), null));
-                    }
-                }
-            }
-
-            if ((exportedCategories == null || !exportedCategories.Any()) && (exportedProducts == null || !exportedProducts.Any()))
-            {
-                var result = _searchService.Search(new SearchCriteria { CatalogId = catalogId, SearchInChildren = true, Skip = 0, Take = int.MaxValue, ResponseGroup = SearchResponseGroup.WithProducts });
-                productIds = result.Products.Select(x => x.Id).ToList();
-            }
-
-            var products = _productService.GetByIds(productIds.Distinct().ToArray(), ItemResponseGroup.ItemLarge);
-            foreach (var product in products)
-            {
-                retVal.Add(product);
-                if (product.Variations != null)
-                {
-                    retVal.AddRange(product.Variations);
-                }
-            }
-
-            return retVal;
         }
     }
 }
