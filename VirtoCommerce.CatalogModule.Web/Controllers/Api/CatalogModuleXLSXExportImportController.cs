@@ -176,34 +176,28 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
                 notifyEvent.InjectFrom(x);
                 _notifier.Upsert(notifyEvent);
             };
-
-            using (var stream = new MemoryStream())
+            
+            try
             {
-                try
+                var blobRelativeUrl = "temp/Catalog-" + catalog.Name + "-export.xlsx";
+                //Upload result csv to blob storage
+                using (var blobStream = _blobStorageProvider.OpenWrite(blobRelativeUrl))
                 {
-                    _xlsxExporter.DoExport(stream, exportInfo, progressCallback);
-
-                    stream.Position = 0;
-                    var blobRelativeUrl = "temp/Catalog-" + catalog.Name + "-export.xlsx";
-                    //Upload result csv to blob storage
-                    using (var blobStream = _blobStorageProvider.OpenWrite(blobRelativeUrl))
-                    {
-                        stream.CopyTo(blobStream);
-                    }
-                    //Get a download url
-                    notifyEvent.DownloadUrl = _blobUrlResolver.GetAbsoluteUrl(blobRelativeUrl);
-                    notifyEvent.Description = "Export finished";
+                    _xlsxExporter.DoExport(blobStream, exportInfo, progressCallback);
                 }
-                catch (Exception ex)
-                {
-                    notifyEvent.Description = "Export failed";
-                    notifyEvent.Errors.Add(ex.ExpandExceptionMessage());
-                }
-                finally
-                {
-                    notifyEvent.Finished = DateTime.UtcNow;
-                    _notifier.Upsert(notifyEvent);
-                }
+                //Get a download url
+                notifyEvent.DownloadUrl = _blobUrlResolver.GetAbsoluteUrl(blobRelativeUrl);
+                notifyEvent.Description = "Export finished";
+            }
+            catch (Exception ex)
+            {
+                notifyEvent.Description = "Export failed";
+                notifyEvent.Errors.Add(ex.ExpandExceptionMessage());
+            }
+            finally
+            {
+                notifyEvent.Finished = DateTime.UtcNow;
+                _notifier.Upsert(notifyEvent);
             }
         }
     }

@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
+using VirtoCommerce.Domain.Catalog.Model;
 
 namespace VirtoCommerce.CatalogModule.Web.Utilities
 {
     public static class DemoXlsxUtilities
     {
-        public static void CreateFileWithData<T>(Stream outStream, string sheetName, IEnumerable<T> products)
+        public static void CreateFileWithData(Stream outStream, string sheetName, ExportDefinition<CatalogProduct> exportDefinition, IEnumerable<CatalogProduct> products)
         {
             using (var spreadSheet = SpreadsheetDocument.Create(outStream, SpreadsheetDocumentType.Workbook))
             {
@@ -31,48 +30,35 @@ namespace VirtoCommerce.CatalogModule.Web.Utilities
                 };
                 sheets.AppendChild(sheet);
 
-                WriteColumnHeaders(typeof(T), worksheetPart);
+                WriteColumnHeaders(exportDefinition, worksheetPart);
 
                 var count = 0;
                 foreach (var product in products)
                 {
-                    WriteRow(product, worksheetPart);
+                    WriteRow(worksheetPart, exportDefinition, product);
                     count++;
                 }
             }
         }
 
-        private static void WriteColumnHeaders(Type type, WorksheetPart worksheetPart)
+        private static void WriteColumnHeaders(ExportDefinition<CatalogProduct> exportDefinition, WorksheetPart worksheetPart)
         {
             var rowValues = new List<OpenXmlElement>();
 
             // Note: keys don't have to be sorted, they just need to appear in the same order everytime they're iterated.
-            foreach (var property in type.GetProperties())
+            foreach (var exportColumnDefinition in exportDefinition)
             {
-                rowValues.Add(new Cell { CellValue = new CellValue(property.Name), DataType = CellValues.String });
+                rowValues.Add(new Cell { CellValue = new CellValue(exportColumnDefinition.Name), DataType = CellValues.String });
             }
             worksheetPart.Worksheet.First().AppendChild(new Row(rowValues.ToArray()));
         }
-
-
-
-        private static void WriteRow<T>(T product, WorksheetPart worksheetPart)
+        
+        private static void WriteRow(WorksheetPart worksheetPart, ExportDefinition<CatalogProduct> exportDefinition, CatalogProduct product)
         {
-            var inv = CultureInfo.InvariantCulture;
-
             var rowValues = new List<OpenXmlElement>();
-            foreach (var value in typeof(T).GetProperties().Select(property => property.GetValue(product, null)))
+            foreach (var columnExportDefinition in exportDefinition)
             {
-                if (value != null)
-                {
-                    var formattable = value as IFormattable;
-                    rowValues.Add(new Cell { CellValue = new CellValue(formattable?.ToString(null, inv) ?? value.ToString()), DataType = CellValues.String });
-                }
-                else
-                {
-
-                    rowValues.Add(new Cell { CellValue = new CellValue(""), DataType = CellValues.String });
-                }
+                rowValues.Add(new Cell { CellValue = new CellValue(columnExportDefinition.GetValue(product)), DataType = CellValues.String });
             }
             worksheetPart.Worksheet.First().AppendChild(new Row(rowValues.ToArray()));
         }
