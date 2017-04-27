@@ -384,7 +384,7 @@
           "errors-count": "Error count",
           "errors": "Errors",
           "download-url": "Download Url",
-          "note": "All catalog product information will be exported to an Excelv file.Download url will be available after export has finished.",
+          "note": "All catalog product information will be exported to an Excel file. Download url will be available after export has finished.",
           "caution": "Caution:",
           "caution-description": "Sorting your Excel file can cause product variants or image URLs to become disassociated. Importing this Excel file may overwrite your existing products with bad data, which cannot be recovered. 'With great power comes great responsibility.'"
         },
@@ -645,6 +645,31 @@
       "catalog-CSV-import-wizard-mapping-step": {
         "title": "Column mapping",
         "subtitle": "Manual map product properties to csv columns"
+      },
+      "catalog-XLSX-import": {
+        "title": "Import catalog from Excel",
+        "subtitle": "All products will be added to '{{name}}' catalog",
+        "labels": {
+          "auto-mapping": "Excel fields automatically mapped to same product properties",
+          "chose-map": "Chose map Excel columns with product fields",
+          "product-property": "Product property",
+          "csv-column": "Excel column",
+          "custom-value": "Custom value",
+          "delimiter": "Excel column delimiter",
+          "upload": "Upload Excel file",
+          "upload-progress": "Upload progress",
+          "map-columns": "Map columns",
+          "define-columns": "Define column mapping",
+          "space": "Space",
+          "comma": "Comma",
+          "semicolon": "Semicolon",
+          "tab": "Tab"
+        },
+        "placeholders": {
+          "delimiter": "Select ...",
+          "select-column-name": "Select ...",
+          "select-custom-value": "Default value..."
+        }
       }
     },
     "commands": {

@@ -9,6 +9,79 @@ using VirtoCommerce.Domain.Catalog.Model;
 
 namespace VirtoCommerce.CatalogModule.Web.Utilities
 {
+    public class ImportDefinition<T> : IEnumerable<ColumnImportDefinition<T>>
+        where T : CatalogProduct
+    {
+        private readonly SortedDictionary<string, ColumnImportDefinition<T>> _columns = new SortedDictionary<string, ColumnImportDefinition<T>>(StringComparer.OrdinalIgnoreCase);
+
+        public void Add(Expression<Func<T, object>> propertyExpression)
+        {
+            if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
+
+            var property = propertyExpression.GetProperty();
+            var column = new ColumnImportDefinition<T>(property);
+            _columns[column.Name] = column;
+        }
+
+        // Use this add to map properties from a different name.
+        public void Add(string name, Expression<Func<T, object>> propertyExpression)
+        {
+            if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
+            
+            var property = propertyExpression.GetProperty();
+            var column = new ColumnImportDefinition<T>(name, property);
+            _columns[name] = column;
+        }
+
+        public IEnumerator<ColumnImportDefinition<T>> GetEnumerator()
+        {
+            return _columns.Select(x => x.Value).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+    }
+
+    public class ColumnImportDefinition<T>
+    {
+        private readonly PropertyInfo _property;
+
+        public string Name { get; protected set; }
+
+        public ColumnImportDefinition(PropertyInfo property)
+        {
+            _property = property;
+            Name = property?.Name;
+        }
+
+        public ColumnImportDefinition(string name, PropertyInfo property)
+        {
+            Name = name;
+            _property = property;
+        }
+
+        public virtual void SetValue(T source, object value)
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            
+            if (string.IsNullOrEmpty((string)value))
+                value = null;
+
+            bool booleanValue;
+            if (bool.TryParse((string)value, out booleanValue))
+            {
+                _property.SetValue(source, booleanValue);
+                return;
+            }
+
+            // TODO: tryformat to _property.PropertyType
+            // TODO: support lists etc.
+            _property.SetValue(source, value);
+        }
+    }
+
     public class ExportDefinition<T> : IEnumerable<ColumnExportDefinition<T>>
     {
         private readonly SortedDictionary<string, ColumnExportDefinition<T>> _columns
@@ -19,8 +92,17 @@ namespace VirtoCommerce.CatalogModule.Web.Utilities
             if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
 
             var property = propertyExpression.GetProperty();
-            var column = new ColumnExportDefinition<T>(property.Name, propertyExpression.Compile());
+            var column = new ColumnExportDefinition<T>(property.Name, property.PropertyType, propertyExpression.Compile());
             _columns[column.Name] = column;
+        }
+
+        public void Add(string name, Expression<Func<T, object>> propertyExpression)
+        {
+            if (propertyExpression == null) throw new ArgumentNullException(nameof(propertyExpression));
+
+            var property = propertyExpression.GetProperty();
+            var column = new ColumnExportDefinition<T>(name, property.PropertyType, propertyExpression.Compile());
+            _columns[name] = column;
         }
 
         public void Add(ColumnExportDefinition<T> columnExportDefinition)
@@ -43,13 +125,15 @@ namespace VirtoCommerce.CatalogModule.Web.Utilities
     {
         private readonly Func<T, object> _fieldAccessor;
         public string Name { get; }
+        public Type PropertyType { get; set; }
 
-        public ColumnExportDefinition(string name, Func<T, object> fieldAccessor)
+        public ColumnExportDefinition(string name, Type propertyType, Func<T, object> fieldAccessor)
         {
             if (fieldAccessor == null) throw new ArgumentNullException(nameof(fieldAccessor));
             if (string.IsNullOrEmpty(name)) throw new ArgumentNullException(nameof(name));
 
             Name = name;
+            PropertyType = propertyType;
             _fieldAccessor = fieldAccessor;
         }
 
@@ -75,29 +159,6 @@ namespace VirtoCommerce.CatalogModule.Web.Utilities
 
             var formattable = value as IFormattable;
             return formattable?.ToString(null, inv) ?? value.ToString();
-        }
-    }
-
-    public static class LinqExtensions
-    {
-        public static PropertyInfo GetProperty<TType, TProperty>(this Expression<Func<TType, TProperty>> propertyExpression)
-        {
-            var memberExpression = propertyExpression.Body as MemberExpression;
-            if (memberExpression == null)
-            {
-                // Convert expression?
-                var unaryExpression = propertyExpression.Body as UnaryExpression;
-                if (unaryExpression != null)
-                {
-                    memberExpression = unaryExpression.Operand as MemberExpression;
-                }
-            }
-            if (memberExpression == null) throw new ArgumentException("Illegal property selection expression.");
-
-            var property = memberExpression.Member as PropertyInfo;
-            if (property == null) throw new ArgumentException("Illegal property selection expression.");
-
-            return property;
         }
     }
 }

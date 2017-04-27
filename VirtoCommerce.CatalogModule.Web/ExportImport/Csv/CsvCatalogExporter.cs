@@ -16,15 +16,13 @@ namespace VirtoCommerce.CatalogModule.Web.ExportImport.Csv
     {
         private readonly IPricingService _pricingService;
         private readonly IInventoryService _inventoryService;
-        private readonly IBlobUrlResolver _blobUrlResolver;
 
         public CsvCatalogExporter(ICatalogSearchService catalogSearchService, IItemService productService,
             IPricingService pricingService, IInventoryService inventoryService, IBlobUrlResolver blobUrlResolver)
-            : base(catalogSearchService, productService)
+            : base(catalogSearchService, productService, blobUrlResolver)
         {
             _pricingService = pricingService;
             _inventoryService = inventoryService;
-            _blobUrlResolver = blobUrlResolver;
         }
 
         public override void DoExport(Stream outStream, ExportInfo exportInfo, Action<ExportImportProgressInfo> progressCallback)
@@ -81,7 +79,7 @@ namespace VirtoCommerce.CatalogModule.Web.ExportImport.Csv
                 {
                     try
                     {
-                        var csvProduct = new CsvProduct(product, _blobUrlResolver, allProductPrices.FirstOrDefault(x => x.ProductId == product.Id), allProductInventories.FirstOrDefault(x => x.ProductId == product.Id));
+                        var csvProduct = new CsvProduct(product, BlobUrlResolver, allProductPrices.FirstOrDefault(x => x.ProductId == product.Id), allProductInventories.FirstOrDefault(x => x.ProductId == product.Id));
                         csvWriter.WriteRecord(csvProduct);
                     }
                     catch (Exception ex)

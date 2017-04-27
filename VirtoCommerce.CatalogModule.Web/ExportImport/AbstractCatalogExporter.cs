@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using VirtoCommerce.Domain.Catalog.Model;
 using VirtoCommerce.Domain.Catalog.Services;
+using VirtoCommerce.Platform.Core.Assets;
 using VirtoCommerce.Platform.Core.ExportImport;
 
 namespace VirtoCommerce.CatalogModule.Web.ExportImport
@@ -12,11 +13,13 @@ namespace VirtoCommerce.CatalogModule.Web.ExportImport
     {
         private readonly ICatalogSearchService _searchService;
         private readonly IItemService _productService;
+        protected readonly IBlobUrlResolver BlobUrlResolver;
 
-        protected AbstractCatalogExporter(ICatalogSearchService catalogSearchService, IItemService productService)
+        protected AbstractCatalogExporter(ICatalogSearchService catalogSearchService, IItemService productService, IBlobUrlResolver blobUrlResolver)
         {
             _searchService = catalogSearchService;
             _productService = productService;
+            BlobUrlResolver = blobUrlResolver;
         }
 
         public abstract void DoExport(Stream outStream, ExportInfo exportInfo, Action<ExportImportProgressInfo> progressCallback);

@@ -8,3 +8,10 @@
 
 }]);
 
+angular.module('virtoCommerce.catalogModule')
+.factory('virtoCommerce.catalogModule.xlsxImport', ['$resource', function ($resource) {
+    return $resource('api/catalog/xlsx/import/:id', { id: '@id' }, {
+        getMappingConfiguration: { method: 'GET', url: 'api/catalog/xlsx/import/mappingconfiguration', isArray: false },
+        run: { method: 'POST', url: 'api/catalog/xlsx/import', isArray: false }
+    });
+}]);

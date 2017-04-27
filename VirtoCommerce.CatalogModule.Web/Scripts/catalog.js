@@ -260,6 +260,13 @@ angular.module(catalogsModuleName, [
 	        controller: 'virtoCommerce.catalogModule.catalogCSVimportWizardController',
 	        template: 'Modules/$(VirtoCommerce.Catalog)/Scripts/blades/import/wizard/catalog-CSV-import-wizard.tpl.html'
 	    });
+	    catalogImportService.register({
+	        name: 'Excel import',
+	        description: 'Catalog data import from Excel',
+	        icon: 'fa fa-file-excel-o',
+	        controller: 'virtoCommerce.catalogModule.catalogExcelimportWizardController',
+	        template: 'Modules/$(VirtoCommerce.Catalog)/Scripts/blades/import/wizard/catalog-XLSX-import-wizard.tpl.html'
+	    });
 	    catalogExportService.register({
 	        name: 'VirtoCommerce CSV export',
 	        description: 'Native VirtoCommerce catalog data export to CSV',

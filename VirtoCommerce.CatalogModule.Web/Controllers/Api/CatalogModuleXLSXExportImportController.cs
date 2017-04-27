@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Web.Http;
 using System.Web.Http.Description;
-using CsvHelper;
 using Hangfire;
 using Omu.ValueInjecter;
 using VirtoCommerce.CatalogModule.Web.ExportImport;
@@ -28,13 +26,13 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
         private readonly ICommerceService _commerceService;
         private readonly IBlobStorageProvider _blobStorageProvider;
         private readonly XlsxCatalogExporter _xlsxExporter;
-        private readonly CsvCatalogImporter _csvImporter;
+        private readonly XlsxCatalogImporter _xlsxImporter;
         private readonly IUserNameResolver _userNameResolver;
         private readonly IBlobUrlResolver _blobUrlResolver;
 
         public CatalogModuleXlsxExportImportController(ICatalogService catalogService, IPushNotificationManager pushNotificationManager, ICommerceService commerceService,
                                                    IBlobStorageProvider blobStorageProvider, IBlobUrlResolver blobUrlResolver,
-                                                   XlsxCatalogExporter xlsxExporter, CsvCatalogImporter csvImporter, ISecurityService securityService, IPermissionScopeService permissionScopeService,
+                                                   XlsxCatalogExporter xlsxExporter, XlsxCatalogImporter xlsxImporter, ISecurityService securityService, IPermissionScopeService permissionScopeService,
                                                    IUserNameResolver userNameResolver)
             : base(securityService, permissionScopeService)
         {
@@ -43,7 +41,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
             _commerceService = commerceService;
             _blobStorageProvider = blobStorageProvider;
             _xlsxExporter = xlsxExporter;
-            _csvImporter = csvImporter;
+            _xlsxImporter = xlsxImporter;
             _userNameResolver = userNameResolver;
             _blobUrlResolver = blobUrlResolver;
         }
@@ -89,7 +87,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
 
             retVal.Delimiter = delimiter;
 
-            //Read csv headers and try to auto map fields by name
+            /*//Read csv headers and try to auto map fields by name
             using (var reader = new CsvReader(new StreamReader(_blobStorageProvider.OpenRead(fileUrl))))
             {
                 reader.Configuration.Delimiter = delimiter;
@@ -97,7 +95,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
                 {
                     retVal.AutoMap(reader.FieldHeaders);
                 }
-            }
+            }*/
 
             return Ok(retVal);
         }
@@ -111,13 +109,13 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
         [HttpPost]
         [Route("import")]
         [ResponseType(typeof(ImportNotification))]
-        public IHttpActionResult DoImport(CsvImportInfo importInfo)
+        public IHttpActionResult DoImport(ImportInfo importInfo)
         {
             CheckCurrentUserHasPermissionForObjects(CatalogPredefinedPermissions.Import, importInfo);
 
             var notification = new ImportNotification(_userNameResolver.GetCurrentUserName())
             {
-                Title = "Import catalog from CSV",
+                Title = "Import catalog from Excel",
                 Description = "starting import...."
             };
             _notifier.Upsert(notification);
@@ -129,7 +127,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
 
         [ApiExplorerSettings(IgnoreApi = true)]
         // Only public methods can be invoked in the background. (Hangfire)
-        public void BackgroundImport(CsvImportInfo importInfo, ImportNotification notifyEvent)
+        public void BackgroundImport(ImportInfo importInfo, ImportNotification notifyEvent)
         {
             Action<ExportImportProgressInfo> progressCallback = x =>
             {
@@ -141,7 +139,7 @@ namespace VirtoCommerce.CatalogModule.Web.Controllers.Api
             {
                 try
                 {
-                    _csvImporter.DoImport(stream, importInfo, progressCallback);
+                    _xlsxImporter.DoImport(stream, importInfo, progressCallback);
                 }
                 catch (Exception ex)
                 {

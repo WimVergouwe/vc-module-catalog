@@ -91,6 +91,7 @@
     <Compile Include="ExportImport\CsvProduct.cs" />
     <Compile Include="ExportImport\CsvProductMappingConfiguration.cs" />
     <Compile Include="ExportImport\CsvProductPropertyMap.cs" />
+    <Compile Include="ExportImport\XlsxProduct.cs" />
     <Compile Include="Model\Aggregation.cs" />
     <Compile Include="Model\AggregationItem.cs" />
     <Compile Include="Model\AggregationLabel.cs" />
@@ -117,6 +118,7 @@
     <Compile Include="Security\CatalogSelectedScope.cs" />
     <Compile Include="Security\SearchCriteriaExtensions.cs" />
     <Compile Include="Utilities\ExportDefinition.cs" />
+    <Compile Include="Utilities\LinqExtensions.cs" />
     <Compile Include="Utilities\XlsxUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
