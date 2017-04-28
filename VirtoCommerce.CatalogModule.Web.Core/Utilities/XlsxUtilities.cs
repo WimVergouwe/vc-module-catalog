@@ -145,7 +145,7 @@ namespace VirtoCommerce.CatalogModule.Web.Utilities
             }
         }
 
-        private static PropertyValueType ParseType(object value)
+        public static PropertyValueType ParseType(object value)
         {
             PropertyValueType parsedType = 0;
             bool parsedBool;
